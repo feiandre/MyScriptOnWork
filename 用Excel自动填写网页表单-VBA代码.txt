@@ -1,0 +1,119 @@
+参考文献http://wenku.baidu.com/view/f1929873f242336c1eb95ebe.html
+
+Public mWindow As Object
+Public mDocument As Object
+Public Sub mComGetIEWindow(ByVal IETitle As String, Optional ByVal WaitTime As Integer = 0)
+    Dim mShellWindow As New SHDocVw.ShellWindows
+    Dim mIndex As Long
+    For mIndex = 0 To mShellWindow.Count - 1
+        If VBA.TypeName(mShellWindow.Item(mIndex).document) = "HTMLDocument" Then
+            If mShellWindow.Item(mIndex).document.Title = IETitle Then
+                If WaitTime = 1 Then
+                    Do While mShellWindow.Item(mIndex).Busy
+                        Application.Wait (Now + TimeValue("0:00:01"))
+                        DoEvents
+                    Loop
+                End If
+                Set mDocument = mShellWindow.Item(mIndex).document
+                Set mWindow = mShellWindow.Item(mIndex)
+                mShellWindow.Item(mIndex).Visible = True
+                Exit Sub
+            End If
+        End If
+    Next mIndex
+End Sub
+
+Public STOPRUN As Integer
+Public Const XMS As Integer = 4
+Public xm As String
+Public xb As Integer
+Public nl As Integer
+Public zc As Integer
+Public Sub GetData()
+    Dim i As Integer
+    Dim r As Range
+    Dim x1 As String, x2 As String
+    Dim x3 As String, x4 As String
+    Dim startcol As Integer, endcol As Integer
+    If Selection Is Nothing Then
+        MsgBox "请先选中处理行", vbOKOnly, "错误"
+        STOPRUN = 1
+        Exit Sub
+    End If
+    i = Selection.Row
+    If i < 2 Then
+        MsgBox "不可处理第一行", vbOKOnly, "错误"
+        STOPRUN = 1
+        Exit Sub
+    End If
+    startcol = 1
+    endcol = startcol + XMS - 1
+    If startcol \ 26 > 0 Then
+        x1 = Chr(Asc("A") + startcol \ 26 - 1)
+    Else: x1 = ""
+    End If
+    x2 = Chr(Asc("A") + startcol Mod 26 - 1)
+    If endcol \ 26 > 0 Then
+        x3 = Chr(Asc("A") + endcol \ 26 - 1)
+    Else: x3 = ""
+    End If
+    x4 = Chr(Asc("A") + endcol Mod 26 - 1)
+    
+    For i = 1 To XMS Step 1
+        Set r = Range(x1 & x2 & i & ":" & x3 & x4 & i)
+        Select Case i
+            Case 1
+                xm = Trim(r.Cells(1, i).Value)
+            Case 2
+                nl = r.Cells(1, i).Value
+            Case 3
+                If Trim(r.Cells(1, i) = "男") Then
+                    xb = 1
+                ElseIf Trim(r.Cells(1, i) = "女") Then
+                    xb = 2
+                Else
+                    MsgBox "性别字段错误", vbOKOnly, "错误"
+                    STOPRUN = 1
+                    Exit Sub
+                End If
+            Case 4:
+                Select Case Trim(r.Cells(1, i).Value)
+                    Case "初级"
+                        zc = 1
+                    Case "中级"
+                        zc = 2
+                    Case "高级"
+                        zc = 3
+                    Case Else
+                        MsgBox "职称字段错误", vbOKOnly, "错误"
+                        STOPRUN = 1
+                        Exit Sub
+                End Select
+        End Select
+    Next i
+End Sub
+Public Sub AutoInputContext()
+STOPRUN = 0
+Call GetData
+If STOPRUN = 1 Then
+    Exit Sub
+End If
+mComGetIEWindow ("测试文档")
+If mDocument Is Nothing Then
+    MsgBox "没有找到指定窗口，必须先打开才可以自动填表", vbOKOnly, "错误"
+    Exit Sub
+End If
+Do While mWindow.Busy
+    DoEvents
+Loop
+With mDocument.form(0)
+.Item("textfield1").Value = xm
+.Item("textfield2").Value = nl
+.Item("rbgroub").Item(xb - 1).Checked = True
+.Item("select1").Item(zc - 1).Checked = True
+.Item("Submit1").Click
+End With
+Set mDocument = Nothing
+Set mWindow = Nothing
+End Sub
+

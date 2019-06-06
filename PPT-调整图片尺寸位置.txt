@@ -1,0 +1,42 @@
+1 、视图 宏
+2、输入ImageEdite 创建
+3、改变尺寸
+
+
+Sub ImageEdite()
+For i = 1 To ActivePresentation.Slides.Count
+        ActivePresentation.Slides(i).Select
+        With ActiveWindow.Selection.SlideRange
+            For j = 1 To ActiveWindow.Selection.SlideRange.Shapes.Count
+            If ActiveWindow.Selection.SlideRange.Shapes(j).Type = 13 Then   '如果该对象为图片
+                ActiveWindow.Selection.SlideRange.Shapes(j).Top = 43  '设置图片的上面的边距
+                ActiveWindow.Selection.SlideRange.Shapes(j).Left = 48 '设置图片的左边的边距
+                ActiveWindow.Selection.SlideRange.Shapes(j).LockAspectRatio = msoFalse '取消原始图片的长宽比
+                'r = ActiveWindow.Selection.SlideRange.Shapes(j).Height / ActiveWindow.Selection.SlideRange.Shapes(j).Width  '保存原始图片的长宽比
+                ActiveWindow.Selection.SlideRange.Shapes(j).Height = 367 '设置图片的新高度值
+               'ActiveWindow.Selection.SlideRange.Shapes(j).Width = ActiveWindow.Selection.SlideRange.Shapes(j).Height / r   '设置图片的新宽度值，等比放大或缩小
+               ActiveWindow.Selection.SlideRange.Shapes(j).Width = 624
+            End If
+            Next j
+        End With
+    Next
+End Sub
+-------------------
+原来的
+
+
+
+For i = 1 To ActivePresentation.Slides.Count
+        ActivePresentation.Slides(i).Select
+        With ActiveWindow.Selection.SlideRange
+            For j = 1 To ActiveWindow.Selection.SlideRange.Shapes.Count
+            If ActiveWindow.Selection.SlideRange.Shapes(j).Type = 13 Then   '如果该对象为图片
+                ActiveWindow.Selection.SlideRange.Shapes(j).Top = 50  '设置图片的上面的边距
+                ActiveWindow.Selection.SlideRange.Shapes(j).Left = 50 '设置图片的左边的边距
+                r = ActiveWindow.Selection.SlideRange.Shapes(j).Height / ActiveWindow.Selection.SlideRange.Shapes(j).Width  '保存原始图片的长宽比
+                ActiveWindow.Selection.SlideRange.Shapes(j).Height = 200  '设置图片的新高度值
+                ActiveWindow.Selection.SlideRange.Shapes(j).Width = ActiveWindow.Selection.SlideRange.Shapes(j).Height / r   '设置图片的新宽度值，等比放大或缩小
+            End If
+            Next j
+        End With
+    Next
